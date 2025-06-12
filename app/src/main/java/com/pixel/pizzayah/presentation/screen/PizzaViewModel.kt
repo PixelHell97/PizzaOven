@@ -3,6 +3,7 @@ package com.pixel.pizzayah.presentation.screen
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pixel.pizzayah.presentation.model.Ingredient
+import com.pixel.pizzayah.presentation.model.PizzaData
 import com.pixel.pizzayah.presentation.model.PizzaSize
 import com.pixel.pizzayah.presentation.providers.PizzaDataProvider
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,37 +31,55 @@ class PizzaViewModel : ViewModel() {
 
     fun onIngredientClicked(ingredient: Ingredient) {
         _pizzaDataState.update { state ->
-            val updatedPizzaList =
-                state.pizzaList.map { pizza ->
-                    if (pizza.id == state.selectedPizza.id) {
-                        val maxOrder = pizza.ingredients.maxOfOrNull { it.selectionOrder } ?: -1
-
-                        val updatedIngredients =
-                            pizza.ingredients.map { item ->
-                                if (item.id == ingredient.id) {
-                                    if (!item.selected) {
-                                        item.copy(selected = true, selectionOrder = maxOrder + 1)
-                                    } else {
-                                        item.copy(selected = false, selectionOrder = -1)
-                                    }
-                                } else {
-                                    item
-                                }
-                            }
-
-                        pizza.copy(ingredients = updatedIngredients)
-                    } else {
-                        pizza
-                    }
-                }
-
-            val updatedPizza = updatedPizzaList.first { it.id == state.selectedPizza.id }
+            val updatedPizzaList = updatePizzaList(ingredient)
+            val updatedSelectedPizza = updatedPizzaList.first { it.id == state.selectedPizza.id }
 
             state.copy(
                 pizzaList = updatedPizzaList,
-                selectedPizza = updatedPizza,
+                selectedPizza = updatedSelectedPizza,
             )
         }
+    }
+
+    private fun updatePizzaList(ingredient: Ingredient): List<PizzaData> {
+        val selectedPizzaId = _pizzaDataState.value.selectedPizza.id
+
+        return _pizzaDataState.value.pizzaList.map { pizza ->
+            if (pizza.id == selectedPizzaId) {
+                updatePizza(pizza, ingredient)
+            } else {
+                pizza
+            }
+        }
+    }
+
+    private fun updatePizza(
+        pizza: PizzaData,
+        ingredient: Ingredient,
+    ): PizzaData {
+        val maxOrder = pizza.ingredients.maxOfOrNull { it.selectionOrder } ?: -1
+
+        val updatedIngredients =
+            pizza.ingredients.map { item ->
+                if (item.id == ingredient.id) {
+                    toggleIngredient(item, maxOrder)
+                } else {
+                    item
+                }
+            }
+
+        return pizza.copy(ingredients = updatedIngredients)
+    }
+
+    private fun toggleIngredient(
+        item: Ingredient,
+        maxOrder: Int,
+    ): Ingredient {
+        val isSelected = !item.selected
+        return item.copy(
+            selected = isSelected,
+            selectionOrder = if (isSelected) maxOrder + 1 else -1,
+        )
     }
 
     fun setSelectedPizza(breadIndex: Int) {
