@@ -16,8 +16,10 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.Button
@@ -68,11 +70,11 @@ fun HomeContent(
     onPizzaSizeClicked: (PizzaSize) -> Unit,
     onIngredientClicked: (Ingredient) -> Unit,
     selectedPizza: PizzaData,
-    modifier: Modifier = Modifier,
     pagerState: PagerState,
+    modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier = modifier.background(Color.White),
+        modifier = modifier.background(Color.White).verticalScroll(rememberScrollState()),
     ) {
         PizzaTopAppBar(
             modifier =
